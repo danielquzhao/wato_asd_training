@@ -13,6 +13,9 @@ endif()
 # Search for dependencies required for building this package
 find_package(ament_cmake REQUIRED) # ROS2 build tool
 find_package(rclcpp REQUIRED)      # ROS2 C++ package
+find_package(nav_msgs REQUIRED)    # For Path and Odometry messages
+find_package(geometry_msgs REQUIRED) # For Twist messages
+find_package(tf2 REQUIRED)         # For quaternion to yaw conversion
 
 # Compiles source files into a library
 # A library is not executed, instead other executables can link
@@ -23,18 +26,26 @@ add_library(control_lib
   src/control_core.cpp)
 # Indicate to compiler where to search for header files
 target_include_directories(control_lib
-  PUBLIC
-  include)
-
+  PUBLIC include)
 # Add ROS2 dependencies required by package
-ament_target_dependencies(control_lib
+ament_target_dependencies(control_lib 
   rclcpp
+  nav_msgs
+  geometry_msgs
+  tf2
 )
 
 # Create ROS2 node executable from source files
 add_executable(control_node src/control_node.cpp)
-# Link to the previously built library to access Transformer classes and methods
+# Link to the previously built library to access control classes and methods
 target_link_libraries(control_node control_lib)
+# Add dependencies to the executable
+ament_target_dependencies(control_node
+  rclcpp
+  nav_msgs
+  geometry_msgs
+  tf2
+)
 
 # Copy executable to installation location
 install(TARGETS
